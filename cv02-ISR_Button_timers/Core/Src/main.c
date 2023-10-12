@@ -56,6 +56,16 @@ static void MX_USART2_UART_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 volatile uint32_t Tick;
+
+void blikac(void)
+{
+	static uint32_t delay;
+
+	if (Tick > delay + LED_TIME_BLINK) {
+		delay = Tick;
+		LL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
+	}
+}
 /* USER CODE END 0 */
 
 /**
@@ -65,16 +75,7 @@ volatile uint32_t Tick;
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	void blikac(void)
-	{
-		static uint32_t delay;
 
-		if (Tick > delay + LED_TIME_BLINK)
-		{
-			GPIOA->ODR ^= (1<<4);
-			delay = Tick;
-		}
-	}
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -105,6 +106,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  blikac();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
