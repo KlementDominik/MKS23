@@ -31,7 +31,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define LED_TIME_BLINK 300
+#define LED_TIME_BLINK 301
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
