@@ -192,9 +192,9 @@ int main(void)
 	  int16_t temp_18b20;
 	  OWReadTemperature(&temp_18b20);	//read temperature
 
-	  sct_value(temp_18b20 / 10,1,1);  //display value for only positiv values
-
-	  //sct_value(ntc_lookup[HAL_ADC_GetValue(&hadc)],1,1);  // index to tab from hadc
+	  sct_value(temp_18b20,1);  //display value for only positiv values
+//uint8_t var = HAL_ADC_GetValue(&hadc);
+//	  sct_value(ntc_lookup[HAL_ADC_GetValue(&hadc)],1);  // index to tab from hadc
 	  //HAL_Delay(500);  //delay
 
   }
@@ -263,7 +263,7 @@ static void MX_ADC_Init(void)
   */
   hadc.Instance = ADC1;
   hadc.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV1;
-  hadc.Init.Resolution = ADC_RESOLUTION_12B;
+  hadc.Init.Resolution = ADC_RESOLUTION_10B;
   hadc.Init.DataAlign = ADC_DATAALIGN_RIGHT;
   hadc.Init.ScanConvMode = ADC_SCAN_DIRECTION_FORWARD;
   hadc.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
@@ -282,17 +282,9 @@ static void MX_ADC_Init(void)
 
   /** Configure for the selected ADC regular channel to be converted.
   */
-  sConfig.Channel = ADC_CHANNEL_0;
+  sConfig.Channel = ADC_CHANNEL_1;
   sConfig.Rank = ADC_RANK_CHANNEL_NUMBER;
   sConfig.SamplingTime = ADC_SAMPLETIME_239CYCLES_5;
-  if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure for the selected ADC regular channel to be converted.
-  */
-  sConfig.Channel = ADC_CHANNEL_1;
   if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK)
   {
     Error_Handler();
