@@ -32,7 +32,7 @@
 /* USER CODE BEGIN PD */
 #define SECOND	1000
 #define TENTH	100
-#define DEBOUNCE_TIME	100
+#define DEBOUNCE_TIME	40
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -98,36 +98,31 @@ int main(void)
   uint8_t minutes = 0;
   uint8_t seconds = 0;
   uint8_t tenths = 0;
+  uint8_t old_seconds = 0;
+  uint8_t old_tenths = 0;
   static uint32_t last_task_time = 0;
-  uint8_t timer_started = 0;
   uint32_t s1_push_time = 0;
   uint32_t s1_state = HAL_GPIO_ReadPin(S1_GPIO_Port, S1_Pin);
   uint32_t s2_state = HAL_GPIO_ReadPin(S2_GPIO_Port, S2_Pin);
-
   uint32_t s2_push_time = 0;
+  enum timer_state {
+    STOP,
+    START,
+    RESET
+  };
+  enum timer_display {
+    SHOW,
+    HIDE
+  };
+
+  enum timer_state timer = START;
+  enum timer_display display = SHOW;
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  if(HAL_GetTick() - last_task_time > TENTH && timer_started)
-	  {
-		  tenths++;
-		  if(tenths == 10)
-		  {
-			  seconds++;
-			  tenths = 0;
-		  }
-
-		  if(seconds == 60)
-		  {
-			  minutes++;
-			  seconds = 0;
-		  }
-		  last_task_time = HAL_GetTick();
-	  }
-
-	  //// DEBOUNCE TLACITKA
+	  // SPRAVA TLACITKA S1
 	  if(HAL_GPIO_ReadPin(S1_GPIO_Port, S1_Pin) != s1_state)
 	  {
 		  s1_state = HAL_GPIO_ReadPin(S1_GPIO_Port, S1_Pin);
@@ -142,13 +137,17 @@ int main(void)
 		  {
 			  if(s1_state == GPIO_PIN_RESET)
 			  {
-				  timer_started = !timer_started; //TODO when pressed
+				  if(display == SHOW){
+					  display = HIDE;
+				  } else {
+					  display = SHOW;
+				  }
 			  }
 		  }
 		  s1_push_time = 0;
 	  }
-	  //// DEBOUNCE TLACITKA
 
+	  // SPRAVA TLACITKA S2
 	  if(HAL_GPIO_ReadPin(S2_GPIO_Port, S2_Pin) != s2_state)
 	  {
 		  s2_state = HAL_GPIO_ReadPin(S2_GPIO_Port, S2_Pin);
@@ -163,20 +162,52 @@ int main(void)
 		  {
 			  if(s2_state == GPIO_PIN_RESET)
 			  {
-				  if(timer_started)
-				  {
-					  timer_started = 0;
+				  if(timer == START){
+					  timer = STOP;
+				  }else if(timer == STOP){
+					  timer = RESET;
+				  }else if(timer == RESET){
+					  timer = START;
 				  }
-				  seconds = 0;
-				  minutes = 0;
-				  tenths = 0;
 			  }
 		  }
 		  s2_push_time = 0;
 	  }
 
+	  //ZOBRAZENI A SKRYTI MEZICASU
+	  if (display == SHOW){
+		  sct_value(seconds * 10 + tenths, tenths, 1);
+		  old_seconds = seconds;
+		  old_tenths = tenths;
+	  } else if (display == HIDE){
+		  sct_value(old_seconds * 10 + old_tenths, old_tenths, 1);
+	  }
 
-	  sct_value(seconds * 10 + tenths, 8, 1);
+	  //SPRAVA STOPEK, START, STOP, RESET
+	  if (timer == STOP){
+	  } else if (timer == START){
+		  if(HAL_GetTick() - last_task_time > TENTH)
+		  	  {
+		  		  tenths++;
+		  		  if(tenths == 10)
+		  		  {
+		  			  seconds++;
+		  			  tenths = 0;
+		  		  }
+
+		  		  if(seconds == 60)
+		  		  {
+		  			  minutes++;
+		  			  seconds = 0;
+		  		  }
+		  		  last_task_time = HAL_GetTick();
+		  	  }
+	  } else if (timer == RESET){
+		  seconds = 0;
+		  minutes = 0;
+		  tenths = 0;
+	  }
+
   }
   /* USER CODE END 3 */
 }
